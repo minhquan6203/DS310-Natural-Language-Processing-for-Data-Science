@@ -1,0 +1,38 @@
+data:
+  dataset_folder: data
+  train_dataset: train.csv
+  val_dataset: dev.csv
+  test_dataset: test.csv
+  use_id: False # nếu set là True thì có sử dụng thông tin id, ngược lại thì không
+
+tokenizer:
+  padding: max_length
+  max_input_length: 50
+  truncation: True
+
+lstm:
+  embedding_dim: 128
+  hidden_dim: 128
+  num_layers: 2
+  dropout: 0.2
+  output_dim: 50
+
+
+model:
+  type_model: lstm
+
+train:
+  output_dir: checkpoint
+  seed: 12345
+  num_train_epochs: 100
+  patience: 5
+  learning_rate: 1.0e-5
+  weight_decay: 0.01
+  metric_for_best_model: f1
+  per_device_train_batch_size: 8
+  per_device_valid_batch_size: 8
+
+inference:
+  with_labels: True
+  test_dataset: /content/data/test.csv
+  batch_size: 2048
