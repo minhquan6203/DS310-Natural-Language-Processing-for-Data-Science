@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from transformers import  AutoModel, AutoTokenizer
+from transformers import  AutoModel, AutoTokenizer, AutoModelForTokenClassification
 from typing import List, Dict, Optional
 from peft import LoraConfig, get_peft_model, prepare_model_for_int8_training, TaskType
 from data_utils.load_data_bert import create_ans_space
@@ -68,4 +68,41 @@ class Bert_Model(nn.Module):
         else:
             logits = self.bert(inputs)
             return logits
+
+
+
+# class Bert_Model(nn.Module):
+#     def __init__(self, config: Dict):
+#         super(Bert_Model, self).__init__()
+#         self.POS_space,self.Tag_space=create_ans_space(config)
+#         self.classifier = AutoModelForTokenClassification.from_pretrained(config["text_embedding"]["text_encoder"],num_labels=len(self.Tag_space))
+#         self.tokenizer = AutoTokenizer.from_pretrained(config["text_embedding"]["text_encoder"])
+#         self.padding = config["tokenizer"]["padding"]
+#         self.truncation = config["tokenizer"]["truncation"]
+#         self.max_length = config["tokenizer"]["max_input_length"]
+#         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+#         if config['text_embedding']['use_lora']==True:
+#             lora_config = LoraConfig(
+#                 r=config['text_embedding']['lora_r'],
+#                 lora_alpha=config['text_embedding']['lora_alpha'],
+#                 # target_modules=config['text_embedding']['lora_target_modules'],
+#                 lora_dropout=config['text_embedding']['lora_dropout'],
+#                 bias="none",
+#             )
+#             self.classifier=get_peft_model(self.classifier,lora_config)
+
+#     def forward(self, text: List[str], labels: Optional[torch.LongTensor] = None):
+#         input_ids = self.tokenizer(text,
+#                                     max_length=self.max_length,
+#                                     truncation = self.truncation,
+#                                     padding = self.padding,
+#                                     return_tensors='pt').to(self.device)
+        
+#         if labels is not None:
+#             outputs = self.classifier(**input_ids, labels=labels)
+#             return outputs.logits,outputs.loss
+#         else:
+#             outputs = self.classifier(**input_ids)
+#             return outputs.logits
 
