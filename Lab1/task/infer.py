@@ -29,8 +29,8 @@ class Inference:
         pred_labels = []
         with torch.no_grad():
             for it,item in enumerate(tqdm(test_data)):
-                inputs = item['inputs'].to(self.device)
-                logits = self.base_model(inputs)
+                with torch.autocast(device_type='cuda', dtype=torch.float32, enabled=True):
+                    logits = self.base_model(item['inputs'])
                 preds = logits.argmax(axis=-1).cpu().numpy()
                 true_labels.extend(item['labels'])
                 pred_labels.extend(preds)
