@@ -12,14 +12,14 @@ class LSTM(nn.Module):
         self.num_layers = config['lstm']['num_layers']
         self.dropout = config['lstm']['dropout'] 
         self.vocab = NERVocab(config)
-        self.POS_space,_=create_ans_space(config)
+        self.POS_space,self.Tag_space=create_ans_space(config)
     
         self.embedding = nn.Embedding(self.vocab.vocab_size(), self.embedding_dim)
         self.dropout_layer = nn.Dropout(p=self.dropout)
         self.lstm = nn.LSTM(self.embedding_dim, self.hidden_dim, 
                             num_layers=self.num_layers, batch_first=True, 
                             dropout=self.dropout) 
-        self.dense = nn.Linear(self.hidden_dim,self.POS_space+1)
+        self.dense = nn.Linear(self.hidden_dim,len(self.Tag_space)+1)
 
     def forward(self, x):
         x = self.embedding(x)
@@ -37,7 +37,7 @@ class LSTM_Model(nn.Module):
     def forward(self, inputs, labels=None):
         if labels is not None:
             logits = self.lstm(inputs)
-            loss = self.loss_fn(logits.view(-1,locals.size(-1)), labels.view(-1))
+            loss = self.loss_fn(logits.view(-1,logits.size(-1)), labels.view(-1))
             return logits, loss
         else:
             logits = self.lstm(inputs)

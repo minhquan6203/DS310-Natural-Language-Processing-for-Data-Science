@@ -9,11 +9,11 @@ from tqdm import tqdm
 
 class Classify_Task:
     def __init__(self, config):
-        self.num_epochs = config['train']['num_epochs']
+        self.num_epochs = config['train']['num_train_epochs']
         self.patience = config['train']['patience']
         self.learning_rate = config['train']['learning_rate']
-        self.best_metric=config['train']['best_metric']
-        self.save_path=os.path.join(config['train']['save_path'],config['train']['model'])
+        self.best_metric=config['train']['metric_for_best_model']
+        self.save_path=os.path.join(config['train']['output_dir'],config['model']['type_model'])
         self.dataloader = Get_Loader(config)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.base_model = LSTM_Model(config).to(self.device)

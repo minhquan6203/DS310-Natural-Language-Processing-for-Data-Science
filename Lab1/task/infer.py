@@ -13,7 +13,7 @@ class Inference:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.base_model = LSTM_Model(config).to(self.device)
         self.dataloader = Get_Loader(config)
-        self.POS_space,_=create_ans_space(config)
+        # self.POS_space,_=create_ans_space(config)
     def predict(self):
         test_data = self.dataloader.load_data_test()
         if os.path.exists(os.path.join(self.save_path, 'best_model.pth')):
