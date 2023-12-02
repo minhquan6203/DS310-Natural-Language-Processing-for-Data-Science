@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import os
-from data_utils.load_data import Get_Loader
+from data_utils.load_data_lstm import Get_Loader
 from data_utils.load_data_bert import Get_Loader_Bert
 from evaluate.evaluate import compute_score
 from tqdm import tqdm
