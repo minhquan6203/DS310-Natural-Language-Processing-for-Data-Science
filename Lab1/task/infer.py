@@ -9,7 +9,7 @@ from tqdm import tqdm
 from model.build_model import build_model
 class Inference:
     def __init__(self,config):
-        self.save_path=os.path.join(config['train']['save_path'],config['model']['model_type'])
+        self.save_path=os.path.join(config['train']['output_dir'],config['model']['type_model'])
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.base_model = build_model(config).to(self.device)
         if config['model']['type_model']=='lstm':
