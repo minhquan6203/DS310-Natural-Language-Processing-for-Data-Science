@@ -20,9 +20,9 @@ class NERDataset(Dataset):
         return len(self.data['inputs'])
 
     def __getitem__(self, idx):
-        inputs = torch.tensor(self.data['inputs'][idx], dtype = torch.int32)
+        inputs = self.data['inputs'][idx]
         if self.with_labels:
-            labels = torch.tensor(self.data['targets'][idx], dtype=torch.long)
+            labels = self.data['targets'][idx]
             return {'inputs': inputs, 'labels': labels}
         else:
             return {'inputs': inputs}

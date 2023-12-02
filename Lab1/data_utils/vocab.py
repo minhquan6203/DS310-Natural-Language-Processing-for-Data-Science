@@ -39,7 +39,8 @@ class NERVocab:
 
         sorted_word_counts = dict(sorted(word_counts.items(), key=lambda x: x[1], reverse=True))
         vocab = list(sorted_word_counts.keys())
-        vocab.append("<UNK>")
+        if '<UNK>' not in vocab:
+            vocab.append("<UNK>")
 
         return vocab, sorted_word_counts
 
@@ -56,7 +57,7 @@ class NERVocab:
         return [self.idx_to_word[idx] for idx in ids]
 
     def vocab_size(self):
-        return len(self.word_to_idx)
+        return len(self.word_to_idx)+1
 
     def pad_token_id(self):
         return 0  # ID for the padding token
