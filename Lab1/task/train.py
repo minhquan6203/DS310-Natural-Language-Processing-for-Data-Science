@@ -3,8 +3,8 @@ import torch.nn as nn
 import torch.optim as optim
 import os
 from data_utils.load_data import Get_Loader
+from data_utils.load_data_bert import Get_Loader_Bert
 from evaluate.evaluate import compute_score
-from model.lstm import LSTM_Model
 from tqdm import tqdm
 from model.build_model import build_model
 class Classify_Task:
@@ -14,7 +14,10 @@ class Classify_Task:
         self.learning_rate = config['train']['learning_rate']
         self.best_metric=config['train']['metric_for_best_model']
         self.save_path=os.path.join(config['train']['output_dir'],config['model']['type_model'])
-        self.dataloader = Get_Loader(config)
+        if config['model']['type_model']=='lstm':
+            self.dataloader = Get_Loader(config)
+        if config['model']['type_model']=='bert':
+            self.dataloader = Get_Loader_Bert(config)     
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.base_model = build_model(config).to(self.device)
         self.optimizer = optim.Adam(self.base_model.parameters(), lr=self.learning_rate)

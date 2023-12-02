@@ -3,17 +3,19 @@ import torch.nn as nn
 import torch.optim as optim
 import os
 from data_utils.load_data import Get_Loader
+from data_utils.load_data_bert import Get_Loader_Bert
 from evaluate.evaluate import compute_score
-from model.lstm import LSTM_Model
 from tqdm import tqdm
 from model.build_model import build_model
-from data_utils.load_data import create_ans_space
 class Inference:
     def __init__(self,config):
         self.save_path=os.path.join(config['train']['save_path'],config['model']['model_type'])
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.base_model = build_model(config).to(self.device)
-        self.dataloader = Get_Loader(config)
+        if config['model']['type_model']=='lstm':
+            self.dataloader = Get_Loader(config)
+        if config['model']['type_model']=='bert':
+            self.dataloader = Get_Loader_Bert(config) 
         # self.POS_space,_=create_ans_space(config)
     def predict(self):
         test_data = self.dataloader.load_data_test()

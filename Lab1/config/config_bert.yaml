@@ -6,7 +6,7 @@ data:
 
 tokenizer:
   padding: max_length
-  max_length: 50
+  max_input_length: 50
   truncation: True
   return_attention_mask: True
 

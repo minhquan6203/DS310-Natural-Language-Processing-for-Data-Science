@@ -1,7 +1,5 @@
 import pandas as pd
 from torch.nn.utils.rnn import pad_sequence
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 from data_utils.vocab import NERVocab
 import torch
 import numpy as np
@@ -34,7 +32,7 @@ class NERDataset(Dataset):
 
     def process_data(self):
         sentences = self.get_sentences()
-        X = [[w[0] for w in s] for s in sentences]
+        X = [' '.join([w[0] for w in s]) for s in sentences]
         if self.with_labels:
             y = [
                 [w[2] for w in s[:self.max_len]] 

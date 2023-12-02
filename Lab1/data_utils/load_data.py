@@ -1,7 +1,5 @@
 import pandas as pd
 from torch.nn.utils.rnn import pad_sequence
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 from data_utils.vocab import NERVocab
 import torch
 import numpy as np
