@@ -4,7 +4,7 @@ from torch.nn import functional as F
 from transformers import  AutoModel, AutoTokenizer
 from typing import List, Dict, Optional
 from peft import LoraConfig, get_peft_model, prepare_model_for_int8_training, TaskType
-from data_utils.load_data import create_ans_space
+from data_utils.load_data_bert import create_ans_space
 
 #design for phobert, xlm-roberta, videberta, bartpho, pretrained in english also supported 
 class Text_Embedding(nn.Module):
