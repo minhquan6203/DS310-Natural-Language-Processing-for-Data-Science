@@ -10,8 +10,7 @@ from data_utils.load_data import create_ans_space
 class Text_Embedding(nn.Module):
     def __init__(self, config: Dict):
         super(Text_Embedding,self).__init__()
-        self.tokenizer = AutoTokenizer.from_pretrained(config["text_embedding"]["text_encoder"])
-        self.embedding = AutoModel.from_pretrained(config["text_embedding"]["text_encoder"])
+        self.embedding = nn.Embedding.from_pretrained(config["text_embedding"]["text_encoder"])
         # freeze all parameters of pretrained model
         if config["text_embedding"]["freeze"]:
             for param in self.embedding.parameters():
@@ -34,21 +33,8 @@ class Text_Embedding(nn.Module):
         self.dropout = nn.Dropout(config["text_embedding"]['dropout'])
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
-        self.padding = config["tokenizer"]["padding"]
-        self.truncation = config["tokenizer"]["truncation"]
-        self.return_attention_mask = config["tokenizer"]["return_attention_mask"]
-        self.max_length = config["tokenizer"]["max_length"]
-
-    def forward(self, text: List[str], text2: List[str]=None):
-        inputs = self.tokenizer(
-            text,text2,
-            padding = self.padding,
-            max_length = self.max_length,
-            truncation = self.truncation,
-            return_tensors = 'pt',
-            return_attention_mask = self.return_attention_mask,
-        ).to(self.device)
-        features = self.embedding(**inputs).last_hidden_state
+    def forward(self, inputs):
+        features = self.embedding(inputs)
         out = self.proj(features)
         out = self.dropout(self.gelu(out))
         return out
