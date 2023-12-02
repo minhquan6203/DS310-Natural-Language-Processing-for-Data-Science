@@ -28,8 +28,7 @@ class NERVocab:
 
         for data_file in dataset.values():
             try:
-                for item in data_file['Word']:
-                    for word in item.split():
+                for word in data_file['Word']:
                         # word=word.lower()
                         if word not in word_counts:
                             word_counts[word] = 1
