@@ -10,7 +10,8 @@ from data_utils.load_data import create_ans_space
 class Text_Embedding(nn.Module):
     def __init__(self, config: Dict):
         super(Text_Embedding,self).__init__()
-        self.embedding = nn.Embedding.from_pretrained(config["text_embedding"]["text_encoder"])
+        self.tokenizer = AutoTokenizer.from_pretrained(config["text_embedding"]["text_encoder"])
+        self.embedding = AutoModel.from_pretrained(config["text_embedding"]["text_encoder"])
         # freeze all parameters of pretrained model
         if config["text_embedding"]["freeze"]:
             for param in self.embedding.parameters():
@@ -33,8 +34,21 @@ class Text_Embedding(nn.Module):
         self.dropout = nn.Dropout(config["text_embedding"]['dropout'])
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
-    def forward(self, inputs):
-        features = self.embedding(inputs)
+        self.padding = config["tokenizer"]["padding"]
+        self.truncation = config["tokenizer"]["truncation"]
+        self.return_attention_mask = config["tokenizer"]["return_attention_mask"]
+        self.max_length = config["tokenizer"]["max_input_length"]
+
+    def forward(self, text: List[str]):
+        inputs = self.tokenizer(
+            text,
+            padding = self.padding,
+            max_length = self.max_length,
+            truncation = self.truncation,
+            return_tensors = 'pt',
+            return_attention_mask = self.return_attention_mask,
+        ).to(self.device)
+        features = self.embedding(**inputs).last_hidden_state
         out = self.proj(features)
         out = self.dropout(self.gelu(out))
         return out
@@ -44,10 +58,11 @@ class Bert_Model(nn.Module):
         super().__init__()
         self.bert = Text_Embedding(config)
         self.loss_fn = nn.CrossEntropyLoss()
-        
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     def forward(self, inputs, labels=None):
         if labels is not None:
             logits = self.bert(inputs)
+            labels=labels.to(self.device)
             loss = self.loss_fn(logits.view(-1,logits.size(-1)), labels.view(-1))
             return logits, loss
         else:

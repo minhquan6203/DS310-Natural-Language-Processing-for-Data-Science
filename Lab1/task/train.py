@@ -55,19 +55,17 @@ class Classify_Task:
             valid_recall=0.
             train_loss = 0.
             for it,item in enumerate(tqdm(train)):
-                inputs, labels = item['inputs'].to(self.device), item['labels'].to(self.device)
                 self.optimizer.zero_grad()
-                logits,loss = self.base_model(inputs,labels)
+                logits,loss = self.base_model(item['inputs'],item['labels'])
                 loss.backward()
                 self.optimizer.step()
                 train_loss += loss
 
             with torch.no_grad():
                 for it,item in enumerate(tqdm(valid)):
-                    inputs, labels = item['inputs'].to(self.device), item['labels'].to(self.device)
-                    logits = self.base_model(inputs)
+                    logits = self.base_model(item['inputs'])
                     preds = logits.argmax(-1)
-                    acc, f1, precision, recall=compute_score(labels.cpu().numpy(),preds.cpu().numpy())
+                    acc, f1, precision, recall=compute_score(item['labels'].cpu().numpy(),preds.cpu().numpy())
                     valid_acc+=acc
                     valid_f1+=f1
                     valid_precision+=precision

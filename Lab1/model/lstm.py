@@ -33,9 +33,12 @@ class LSTM_Model(nn.Module):
         super().__init__()
         self.lstm = LSTM(config)
         self.loss_fn = nn.CrossEntropyLoss()
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     def forward(self, inputs, labels=None):
+        inputs=inputs.to(self.device)
         if labels is not None:
+            labels=labels.to(self.device)
             logits = self.lstm(inputs)
             loss = self.loss_fn(logits.view(-1,logits.size(-1)), labels.view(-1))
             return logits, loss

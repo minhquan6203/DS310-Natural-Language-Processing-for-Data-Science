@@ -6,14 +6,12 @@ import numpy as np
 from torch.utils.data import DataLoader, Dataset
 import os
 from typing import List, Dict, Optional
-from transformers import  AutoModel, AutoTokenizer
+
 class NERDataset(Dataset):
-    def __init__(self, df, vocab, max_len, tokenizer,with_labels=True):
+    def __init__(self, df, max_len,with_labels=True):
         self.df = df
-        self.vocab = vocab
         self.max_len = max_len
         self.with_labels = with_labels
-        self.tokenizer=tokenizer
         self.data= self.process_data()
 
     def __len__(self):
@@ -34,17 +32,13 @@ class NERDataset(Dataset):
 
     def process_data(self):
         sentences = self.get_sentences()
-        X = [[self.tokenizer.encode(w[0]) for w in s[:self.max_len]] for s in sentences]
-        X = pad_sequence(
-            [torch.tensor(x, dtype=torch.int32) for x in X], 
-            padding_value=self.tokenizer.pad_token_id, 
-            batch_first=True
-        )
+        X=[]
+        for s in sentences:
+            sentence=' '.join([w[0] for w in s])
+            X.append(sentence)
+
         if self.with_labels:
-            y = [
-                [w[2] for w in s[:self.max_len]] 
-                for s in sentences
-            ]
+            y = [[w[2] for w in s[:self.max_len]] for s in sentences]
 
             y = pad_sequence([torch.tensor(label, dtype=torch.long) for label in y], 
                             padding_value=0, 
@@ -65,8 +59,6 @@ class NERDataset(Dataset):
 
 class Get_Loader_Bert:
     def __init__(self, config):
-        self.vocab = NERVocab(config)
-        self.tokenizer = AutoTokenizer.from_pretrained(config["text_embedding"]["text_encoder"])
         self.train_path=os.path.join(config['data']['dataset_folder'],config['data']['train_dataset'])
         self.train_batch=config['train']['per_device_train_batch_size']
 
@@ -93,8 +85,8 @@ class Get_Loader_Bert:
         df_val['POS'] =df_val['POS'].map(POS_to_index)
         df_val['Tag'] =df_val['Tag'].map(Tag_to_index)
 
-        train_data = NERDataset(df_train, self.vocab, self.max_len,self.tokenizer)
-        val_data = NERDataset(df_val, self.vocab, self.max_len,self.tokenizer)
+        train_data = NERDataset(df_train, self.max_len)
+        val_data = NERDataset(df_val, self.max_len)
         train_loader = DataLoader(train_data, batch_size=self.train_batch, shuffle=True)
         dev_loader = DataLoader(val_data, batch_size=self.val_batch, shuffle=True)
 
@@ -108,7 +100,7 @@ class Get_Loader_Bert:
         Tag_to_index = {label: index+1 for index, label in enumerate(Tag_space)}
         df_test['POS'] =df_test['POS'].map(POS_to_index)        
         df_test['Tag'] =df_test['Tag'].map(Tag_to_index)
-        test_data = NERDataset(df_test, self.vocab, self.max_len,self.tokenizer,self.with_labels)
+        test_data = NERDataset(df_test, self.max_len,self.with_labels)
         test_loader = DataLoader(test_data, batch_size=self.test_batch, shuffle=False)
         return test_loader
 

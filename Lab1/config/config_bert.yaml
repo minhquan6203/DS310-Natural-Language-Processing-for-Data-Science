@@ -12,7 +12,7 @@ tokenizer:
 
 text_embedding:
   type: pretrained #có 3 loại, pretrained, tf_idf, count_vec
-  text_encoder: vinai/phobert-base
+  text_encoder: bert-base-cased
   freeze: False
   use_lora: False
   # lora_target_modules: ["q", ".k", "v", ".o", "wi_0", "wi_1", "wo"]
