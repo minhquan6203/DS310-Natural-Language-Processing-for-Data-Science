@@ -66,6 +66,6 @@ class Bert_Model(nn.Module):
             loss = self.loss_fn(logits.view(-1,logits.size(-1)), labels.view(-1))
             return logits, loss
         else:
-            logits = self.lstm(inputs)
+            logits = self.bert(inputs)
             return logits
 
