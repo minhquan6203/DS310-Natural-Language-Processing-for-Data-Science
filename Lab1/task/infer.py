@@ -7,10 +7,12 @@ from data_utils.load_data_bert import Get_Loader_Bert
 from evaluate.evaluate import compute_score
 from tqdm import tqdm
 from model.build_model import build_model
+from data_utils.vocab import create_ans_space
 class Inference:
     def __init__(self,config):
         self.save_path=os.path.join(config['train']['output_dir'],config['model']['type_model'])
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.POS_space,self.Tag_space=create_ans_space(config)
         self.base_model = build_model(config).to(self.device)
         if config['model']['type_model']=='lstm':
             self.dataloader = Get_Loader(config)
@@ -34,6 +36,6 @@ class Inference:
                 preds = logits.argmax(axis=-1).cpu().numpy()
                 true_labels.extend(item['labels'])
                 pred_labels.extend(preds)
-        test_acc,test_f1,test_precision,test_recall=compute_score(true_labels,pred_labels)
+        test_acc,test_f1,test_precision,test_recall=compute_score(true_labels,pred_labels,self.Tag_space)
         print(f"test acc: {test_acc:.4f} | test f1: {test_f1:.4f} | test precision: {test_precision:.4f} | test recall: {test_recall:.4f}")
         

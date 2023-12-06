@@ -7,6 +7,7 @@ from data_utils.load_data_bert import Get_Loader_Bert
 from evaluate.evaluate import compute_score
 from tqdm import tqdm
 from model.build_model import build_model
+from data_utils.vocab import create_ans_space
 class Classify_Task:
     def __init__(self, config):
         self.num_epochs = config['train']['num_train_epochs']
@@ -19,6 +20,7 @@ class Classify_Task:
             self.dataloader = Get_Loader(config)
         if config['model']['type_model']=='bert':
             self.dataloader = Get_Loader_Bert(config) 
+        self.POS_space,self.Tag_space=create_ans_space(config)    
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.base_model = build_model(config).to(self.device)
         self.optimizer = optim.Adam(self.base_model.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
@@ -72,7 +74,7 @@ class Classify_Task:
                     with torch.autocast(device_type='cuda', dtype=torch.float32, enabled=True):
                         logits = self.base_model(item['inputs'])
                     preds = logits.argmax(-1)
-                    acc, f1, precision, recall=compute_score(item['labels'].cpu().numpy(),preds.cpu().numpy())
+                    acc, f1, precision, recall=compute_score(item['labels'].cpu().numpy(),preds.cpu().numpy(),self.Tag_space)
                     valid_acc+=acc
                     valid_f1+=f1
                     valid_precision+=precision

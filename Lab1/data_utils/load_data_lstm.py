@@ -25,6 +25,11 @@ class NERDataset(Dataset):
             return {'inputs': inputs, 'labels': torch.tensor(labels,dtype=torch.long)}
         else:
             return {'inputs': inputs}
+    
+    def pad_list(self, list: List, max_len: int, value):
+        pad_value_list = [value] * (max_len - len(list))
+        list.extend(pad_value_list)
+        return list
 
     def process_data(self):
         sentences = self.get_sentences()

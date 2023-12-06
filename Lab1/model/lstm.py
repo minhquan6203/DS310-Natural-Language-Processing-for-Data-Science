@@ -19,7 +19,7 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(self.embedding_dim, self.hidden_dim, 
                             num_layers=self.num_layers, batch_first=True, 
                             dropout=self.dropout) 
-        self.dense = nn.Linear(self.hidden_dim,len(self.Tag_space)+1)
+        self.dense = nn.Linear(self.hidden_dim,len(self.Tag_space)+3)
 
     def forward(self, x):
         x = self.embedding(x)
