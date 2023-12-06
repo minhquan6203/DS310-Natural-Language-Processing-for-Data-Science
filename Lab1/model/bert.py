@@ -4,7 +4,7 @@ from torch.nn import functional as F
 from transformers import  AutoModel, AutoTokenizer, AutoModelForTokenClassification
 from typing import List, Dict, Optional
 from peft import LoraConfig, get_peft_model, prepare_model_for_int8_training, TaskType
-from data_utils.load_data_bert import create_ans_space
+from data_utils.vocab import create_ans_space
 
 #design for phobert, xlm-roberta, videberta, bartpho, pretrained in english also supported 
 class Text_Embedding(nn.Module):
@@ -29,7 +29,7 @@ class Text_Embedding(nn.Module):
             # self.embedding = prepare_model_for_int8_training(self.embedding)
             self.embedding = get_peft_model(self.embedding, lora_config)
         self.POS_space,self.Tag_space=create_ans_space(config)
-        self.proj = nn.Linear(config["text_embedding"]['d_features'], len(self.Tag_space)+1)
+        self.proj = nn.Linear(config["text_embedding"]['d_features'], len(self.Tag_space)+3)
         self.gelu = nn.GELU()
         self.dropout = nn.Dropout(config["text_embedding"]['dropout'])
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

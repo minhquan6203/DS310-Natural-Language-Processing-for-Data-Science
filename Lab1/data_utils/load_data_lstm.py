@@ -7,11 +7,12 @@ from torch.utils.data import DataLoader, Dataset
 import os
 from typing import List, Dict, Optional
 class NERDataset(Dataset):
-    def __init__(self, df, vocab, max_len, with_labels=True):
+    def __init__(self, df, vocab, max_len, num_tag,with_labels=True):
         self.df = df
         self.vocab = vocab
         self.max_len = max_len
         self.with_labels = with_labels
+        self.num_tag = num_tag
         self.data= self.process_data()
 
     def __len__(self):
@@ -46,7 +47,7 @@ class NERDataset(Dataset):
             ]
 
             y = pad_sequence([torch.tensor(label, dtype=torch.long) for label in y], 
-                            padding_value=0, 
+                            padding_value=self.num_tag+1, 
                             batch_first=True)
 
             return {'inputs': X, 'targets': y}
@@ -84,16 +85,16 @@ class Get_Loader:
 
         POS_space = list(np.unique(df_train['POS']))
         Tag_space = list(np.unique(df_train['Tag']))
-        POS_to_index = {label: index+1 for index, label in enumerate(POS_space)}
-        Tag_to_index = {label: index+1 for index, label in enumerate(Tag_space)}
+        POS_to_index = {label: index for index, label in enumerate(POS_space)}
+        Tag_to_index = {label: index for index, label in enumerate(Tag_space)}
         df_train['POS'] =df_train['POS'].map(POS_to_index)        
         df_train['Tag'] =df_train['Tag'].map(Tag_to_index)
 
         df_val['POS'] =df_val['POS'].map(POS_to_index)
         df_val['Tag'] =df_val['Tag'].map(Tag_to_index)
-
-        train_data = NERDataset(df_train, self.vocab, self.max_len)
-        val_data = NERDataset(df_val, self.vocab, self.max_len)
+ 
+        train_data = NERDataset(df_train, self.vocab, self.max_len, len(Tag_space))
+        val_data = NERDataset(df_val, self.vocab, self.max_len, len(Tag_space))
         train_loader = DataLoader(train_data, batch_size=self.train_batch, shuffle=True)
         dev_loader = DataLoader(val_data, batch_size=self.val_batch, shuffle=True)
 
@@ -103,22 +104,10 @@ class Get_Loader:
         df_test = pd.read_csv(self.test_path, encoding="latin1")
         POS_space = list(np.unique(df_test['POS']))
         Tag_space = list(np.unique(df_test['Tag']))
-        POS_to_index = {label: index+1 for index, label in enumerate(POS_space)}
-        Tag_to_index = {label: index+1 for index, label in enumerate(Tag_space)}
+        POS_to_index = {label: index for index, label in enumerate(POS_space)}
+        Tag_to_index = {label: index for index, label in enumerate(Tag_space)}
         df_test['POS'] =df_test['POS'].map(POS_to_index)        
         df_test['Tag'] =df_test['Tag'].map(Tag_to_index)
-        test_data = NERDataset(df_test, self.vocab, self.max_len, self.with_labels)
+        test_data = NERDataset(df_test, self.vocab, self.max_len, len(Tag_space), self.with_labels)
         test_loader = DataLoader(test_data, batch_size=self.test_batch, shuffle=False)
         return test_loader
-
-def create_ans_space(config: Dict):
-    train_path=os.path.join(config['data']['dataset_folder'],config['data']['train_dataset'])
-    df_train=pd.read_csv(train_path)
-    POS_space = list(np.unique(df_train['POS']))
-    Tag_space = list(np.unique(df_train['Tag']))
-    POS_to_index = {label: index+1 for index, label in enumerate(POS_space)}
-    df_train['POS'] =df_train['POS'].map(POS_to_index)
-
-    Tag_to_index = {label: index+1 for index, label in enumerate(Tag_space)}
-    df_train['Tag'] =df_train['Tag'].map(Tag_to_index)
-    return POS_space, Tag_space

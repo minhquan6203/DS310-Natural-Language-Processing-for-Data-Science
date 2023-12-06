@@ -2,6 +2,8 @@ import os
 from typing import List, Dict, Optional
 from datasets import load_dataset
 import os
+import numpy as np
+import pandas as pd
 
 class NERVocab:
     def __init__(self, config: Dict):
@@ -64,3 +66,14 @@ class NERVocab:
 
 
 
+def create_ans_space(config: Dict):
+    train_path=os.path.join(config['data']['dataset_folder'],config['data']['train_dataset'])
+    df_train=pd.read_csv(train_path)
+    POS_space = list(np.unique(df_train['POS']))
+    Tag_space = list(np.unique(df_train['Tag']))
+    POS_to_index = {label: index for index, label in enumerate(POS_space)}
+    df_train['POS'] =df_train['POS'].map(POS_to_index)
+
+    Tag_to_index = {label: index for index, label in enumerate(Tag_space)}
+    df_train['Tag'] =df_train['Tag'].map(Tag_to_index)
+    return POS_space, Tag_space
