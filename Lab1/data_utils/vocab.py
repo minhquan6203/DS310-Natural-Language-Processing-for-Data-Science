@@ -43,6 +43,10 @@ class NERVocab:
         vocab = list(sorted_word_counts.keys())
         if '<UNK>' not in vocab:
             vocab.append("<UNK>")
+        if '[SEP]' not in vocab:
+            vocab.append("[SEP]")
+        if '[CLS]' not in vocab:
+            vocab.append("[CLS]")
 
         return vocab, sorted_word_counts
 

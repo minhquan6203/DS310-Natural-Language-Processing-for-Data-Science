@@ -22,33 +22,36 @@ class NERDataset(Dataset):
         inputs = self.data['inputs'][idx]
         if self.with_labels:
             labels = self.data['targets'][idx]
-            return {'inputs': inputs, 'labels': labels}
+            return {'inputs': inputs, 'labels': torch.tensor(labels,dtype=torch.long)}
         else:
             return {'inputs': inputs}
 
     def process_data(self):
         sentences = self.get_sentences()
-        X = [
-            [
-                self.vocab.word_to_idx.get(w[0], self.vocab.word_to_idx['<UNK>']) 
-                for w in s[:self.max_len]
-            ] 
-            for s in sentences
-        ]
+        X=[]
+        for s in sentences:
+            sen=[self.vocab.word_to_idx.get('[CLS]')]
+            for w in s:
+                sen.append(self.vocab.word_to_idx.get(w[0],self.vocab.word_to_idx['<UNK>']))
+            sen=sen[:self.max_len-1]
+            sen.append(self.vocab.word_to_idx.get('[SEP]'))
+            X.append(sen)
+
         X = pad_sequence(
             [torch.tensor(x, dtype=torch.int32) for x in X], 
             padding_value=float(self.vocab.pad_token_id()), 
             batch_first=True
         )
         if self.with_labels:
-            y = [
-                [w[2] for w in s[:self.max_len]] 
-                for s in sentences
-            ]
-
-            y = pad_sequence([torch.tensor(label, dtype=torch.long) for label in y], 
-                            padding_value=self.num_tag+1, 
-                            batch_first=True)
+            y=[]
+            for s in sentences:
+              labels=[self.num_tag+1]
+              for w in s:
+                labels.append(w[2])
+                labels=labels[:self.max_len-1]
+              labels.append(self.num_tag+2)
+              labels=self.pad_list(labels,self.max_len,self.num_tag)
+              y.append(labels)
 
             return {'inputs': X, 'targets': y}
         else:

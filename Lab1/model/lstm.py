@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from data_utils.vocab import NERVocab
-from data_utils.load_data_lstm import create_ans_space
+from data_utils.vocab import create_ans_space
 
 class LSTM(nn.Module):
     def __init__(self, config):
