@@ -37,7 +37,7 @@ class Text_Embedding(nn.Module):
         features = self.embedding(input_ids=inputs).last_hidden_state
         features = self.dropout(self.gelu(features))
         out = self.proj(features)
-        return out
+        return F.log_softmax(out,dim=-1)
 
 class Bert_Model(nn.Module):
     def __init__(self, config):
