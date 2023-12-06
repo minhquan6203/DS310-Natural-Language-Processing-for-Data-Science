@@ -10,7 +10,6 @@ from data_utils.vocab import create_ans_space
 class Text_Embedding(nn.Module):
     def __init__(self, config: Dict):
         super(Text_Embedding,self).__init__()
-        self.tokenizer = AutoTokenizer.from_pretrained(config["text_embedding"]["text_encoder"])
         self.embedding = AutoModel.from_pretrained(config["text_embedding"]["text_encoder"])
         # freeze all parameters of pretrained model
         if config["text_embedding"]["freeze"]:
@@ -24,7 +23,7 @@ class Text_Embedding(nn.Module):
                 # target_modules=config['text_embedding']['lora_target_modules'],
                 lora_dropout=config['text_embedding']['lora_dropout'],
                 bias="none",
-                task_type=TaskType.SEQ_CLS,
+                task_type=TaskType.TOKEN_CLS,
             )
             # self.embedding = prepare_model_for_int8_training(self.embedding)
             self.embedding = get_peft_model(self.embedding, lora_config)
@@ -33,24 +32,11 @@ class Text_Embedding(nn.Module):
         self.gelu = nn.GELU()
         self.dropout = nn.Dropout(config["text_embedding"]['dropout'])
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        
-        self.padding = config["tokenizer"]["padding"]
-        self.truncation = config["tokenizer"]["truncation"]
-        self.return_attention_mask = config["tokenizer"]["return_attention_mask"]
-        self.max_length = config["tokenizer"]["max_input_length"]
 
-    def forward(self, text: List[str]):
-        inputs = self.tokenizer(
-            text,
-            padding = self.padding,
-            max_length = self.max_length,
-            truncation = self.truncation,
-            return_tensors = 'pt',
-            return_attention_mask = self.return_attention_mask,
-        ).to(self.device)
-        features = self.embedding(**inputs).last_hidden_state
+    def forward(self, inputs):
+        features = self.embedding(input_ids=inputs).last_hidden_state
+        features = self.dropout(self.gelu(features))
         out = self.proj(features)
-        out = self.dropout(self.gelu(out))
         return out
 
 class Bert_Model(nn.Module):
@@ -60,6 +46,7 @@ class Bert_Model(nn.Module):
         self.loss_fn = nn.CrossEntropyLoss()
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     def forward(self, inputs, labels=None):
+        inputs=inputs.to(self.device)
         if labels is not None:
             logits = self.bert(inputs)
             labels=labels.to(self.device)
@@ -76,7 +63,6 @@ class Bert_Model(nn.Module):
 #         super(Bert_Model, self).__init__()
 #         self.POS_space,self.Tag_space=create_ans_space(config)
 #         self.classifier = AutoModelForTokenClassification.from_pretrained(config["text_embedding"]["text_encoder"],num_labels=len(self.Tag_space))
-#         self.tokenizer = AutoTokenizer.from_pretrained(config["text_embedding"]["text_encoder"])
 #         self.padding = config["tokenizer"]["padding"]
 #         self.truncation = config["tokenizer"]["truncation"]
 #         self.max_length = config["tokenizer"]["max_input_length"]
@@ -89,20 +75,16 @@ class Bert_Model(nn.Module):
 #                 # target_modules=config['text_embedding']['lora_target_modules'],
 #                 lora_dropout=config['text_embedding']['lora_dropout'],
 #                 bias="none",
+#                 task_type=TaskType.TOKEN_CLS
+
 #             )
 #             self.classifier=get_peft_model(self.classifier,lora_config)
 
-#     def forward(self, text: List[str], labels: Optional[torch.LongTensor] = None):
-#         input_ids = self.tokenizer(text,
-#                                     max_length=self.max_length,
-#                                     truncation = self.truncation,
-#                                     padding = self.padding,
-#                                     return_tensors='pt').to(self.device)
-        
+#     def forward(self, input_ids: List[str], labels: Optional[torch.LongTensor] = None):        
 #         if labels is not None:
-#             outputs = self.classifier(**input_ids, labels=labels)
+#             outputs = self.classifier(input_ids=input_ids, labels=labels)
 #             return outputs.logits,outputs.loss
 #         else:
-#             outputs = self.classifier(**input_ids)
+#             outputs = self.classifier(input_ids)
 #             return outputs.logits
 

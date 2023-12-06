@@ -6,13 +6,15 @@ import numpy as np
 from torch.utils.data import DataLoader, Dataset
 import os
 from typing import List, Dict, Optional
+from transformers import  AutoModel, AutoTokenizer, AutoModelForTokenClassification
 
 class NERDataset(Dataset):
-    def __init__(self, df, max_len,num_tag,with_labels=True):
+    def __init__(self, df, tokenizer, max_len, num_tag,with_labels=True):
         self.df = df
         self.max_len = max_len
         self.with_labels = with_labels
         self.num_tag=num_tag
+        self.tokenizer=tokenizer
         self.data= self.process_data()
 
     def __len__(self):
@@ -22,7 +24,7 @@ class NERDataset(Dataset):
         inputs = self.data['inputs'][idx]
         if self.with_labels:
             labels = self.data['targets'][idx]
-            return {'inputs': inputs, 'labels': torch.tensor(labels,dtype=torch.long)}
+            return {'inputs': torch.tensor(inputs), 'labels': torch.tensor(labels,dtype=torch.long)}
         else:
             return {'inputs': inputs}
         
@@ -37,7 +39,7 @@ class NERDataset(Dataset):
         X=[]
         for s in sentences:
             sentence=' '.join([w[0] for w in s])
-            X.append(sentence)
+            X.append(self.tokenizer.encode(sentence,padding='max_length',truncation=True,max_length=self.max_len))
 
         if self.with_labels:
             y=[]
@@ -64,6 +66,7 @@ class NERDataset(Dataset):
 
 class Get_Loader_Bert:
     def __init__(self, config):
+        self.tokenizer = AutoTokenizer.from_pretrained(config["text_embedding"]["text_encoder"])
         self.train_path=os.path.join(config['data']['dataset_folder'],config['data']['train_dataset'])
         self.train_batch=config['train']['per_device_train_batch_size']
 
@@ -90,8 +93,8 @@ class Get_Loader_Bert:
         df_val['POS'] =df_val['POS'].map(POS_to_index)
         df_val['Tag'] =df_val['Tag'].map(Tag_to_index)
 
-        train_data = NERDataset(df_train,self.max_len,len(Tag_space))
-        val_data = NERDataset(df_val,self.max_len,len(Tag_space))
+        train_data = NERDataset(df_train,self.tokenizer,self.max_len,len(Tag_space))
+        val_data = NERDataset(df_val,self.tokenizer,self.max_len,len(Tag_space))
         train_loader = DataLoader(train_data, batch_size=self.train_batch, shuffle=True)
         dev_loader = DataLoader(val_data, batch_size=self.val_batch, shuffle=True)
 
@@ -105,7 +108,7 @@ class Get_Loader_Bert:
         Tag_to_index = {label: index for index, label in enumerate(Tag_space)}
         df_test['POS'] =df_test['POS'].map(POS_to_index)        
         df_test['Tag'] =df_test['Tag'].map(Tag_to_index)
-        test_data = NERDataset(df_test, self.max_len,len(Tag_space),self.with_labels)
+        test_data = NERDataset(df_test, self.tokenizer,self.max_len,len(Tag_space),self.with_labels)
         test_loader = DataLoader(test_data, batch_size=self.test_batch, shuffle=False)
         return test_loader
 
