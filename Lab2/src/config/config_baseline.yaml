@@ -2,7 +2,7 @@ base:
   use_cuda: True
 
 data:
-  dataset_folder: vietnamese-sentiment-analysis/data
+  dataset_folder: data
   train_dataset: train.csv
   val_dataset: dev.csv
   test_dataset: test.csv
@@ -61,5 +61,5 @@ metrics:
   metrics_file: metrics.json
 
 inference:
-  test_dataset: /content/vietnamese-sentiment-analysis/data/test.csv
+  test_dataset: data/test.csv
   batch_size: 512
