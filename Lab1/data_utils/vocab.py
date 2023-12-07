@@ -38,13 +38,13 @@ class NERVocab:
                             word_counts[word] += 1
             except:
                 pass
+        special_token=['[UNK]','[CLS]','[SEP]']
+        for w in special_token:
+          if w not in word_counts:
+            word_counts[w]=1
+          else:
+            word_counts[w]+=1
         sorted_word_counts = dict(sorted(word_counts.items(), key=lambda x: x[1], reverse=True))
-        if '[UNK]' not in word_counts:
-            word_counts['[UNK]']=1
-        if '[CLS]' not in word_counts:
-            word_counts['<UNK>']=1
-        if '[SEP]' not in word_counts:
-            word_counts['<UNK>']=1
         vocab = list(sorted_word_counts.keys())
         return vocab, sorted_word_counts
 
