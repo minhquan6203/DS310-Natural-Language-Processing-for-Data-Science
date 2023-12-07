@@ -37,7 +37,7 @@ class NERDataset(Dataset):
         for s in sentences:
             sen=[self.vocab.word_to_idx.get('[CLS]')]
             for w in s:
-                sen.append(self.vocab.word_to_idx.get(w[0],self.vocab.word_to_idx['<UNK>']))
+                sen.append(self.vocab.word_to_idx.get(w[0],self.vocab.word_to_idx['[UNK]']))
             sen=sen[:self.max_len-1]
             sen.append(self.vocab.word_to_idx.get('[SEP]'))
             X.append(sen)
