@@ -44,13 +44,13 @@ class NERDataset(Dataset):
         if self.with_labels:
             y=[]
             for s in sentences:
-              labels=[self.num_tag+1]
-              for w in s:
-                labels.append(w[2])
+                labels=[self.num_tag+1]
+                for w in s:
+                    labels.append(w[2])
                 labels=labels[:self.max_len-1]
-              labels.append(self.num_tag+2)
-              labels=self.pad_list(labels,self.max_len,self.num_tag)
-              y.append(labels)
+                labels.append(self.num_tag+2)
+                labels=self.pad_list(labels,self.max_len,self.num_tag)
+                y.append(labels)
 
             return {'inputs': X, 'targets': y}
         else:

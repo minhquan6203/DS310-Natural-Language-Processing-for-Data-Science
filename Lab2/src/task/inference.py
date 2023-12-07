@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 import torch
 import transformers
 from model.init_model import get_model
-from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix, classification_report
 class Predict:
     def __init__(self,config: Dict,answer_space):
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -49,6 +49,7 @@ class Predict:
         print('f1 macro on test:', f1_score(gts,y_preds,average='macro'))
         print('f1 weighted on test:', f1_score(gts,y_preds,average='weighted'))
         print('confusion matrix:\n',confusion_matrix(gts,y_preds))
+        print('classification report', classification_report(gts,y_preds))
         data = {'preds': y_preds,'gts': gts }
         df = pd.DataFrame(data)
         df.to_csv('./submission.csv', index=False)
