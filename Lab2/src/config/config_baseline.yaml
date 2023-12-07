@@ -1,0 +1,65 @@
+base:
+  use_cuda: True
+
+data:
+  dataset_folder: vietnamese-sentiment-analysis/data
+  train_dataset: train.csv
+  val_dataset: dev.csv
+  test_dataset: test.csv
+
+attention:
+  heads: 16
+  layers: 4
+  dropout: 0.2
+
+tokenizer:
+  padding: max_length
+  max_length: 64
+  truncation: True
+  return_token_type_ids: True
+  return_attention_mask: True
+
+text_embedding:
+  type: usual_embedding #có 5 loại, pretrained, count_vector, tf_idf, usual_embedding, fastext
+  text_encoder: vinai/phobert-base
+  freeze: True
+  d_features: 768
+  d_model: 512
+  dropout: 0.2
+
+model:
+  type_model: baseline
+  name: sentiment_analysis  # Custom name for the model
+  intermediate_dims: 512
+  dropout: 0.2
+
+early_stoping:
+  early_stopping_patience: 5
+
+train:
+  output_dir: checkpoint
+  seed: 12345
+  num_train_epochs: 100
+  learning_rate: 5.0e-5
+  weight_decay: 0.0
+  warmup_ratio: 0.0
+  warmup_steps: 0
+  evaluation_strategy: epoch
+  logging_strategy: epoch
+  save_strategy: epoch
+  save_total_limit: 2 
+  metric_for_best_model: eval_f1
+  per_device_train_batch_size: 256
+  per_device_eval_batch_size: 256
+  remove_unused_columns: False
+  dataloader_num_workers: 2
+  load_best_model_at_end: True
+
+
+metrics:
+  metrics_folder: metrics
+  metrics_file: metrics.json
+
+inference:
+  test_dataset: /content/vietnamese-sentiment-analysis/data/test.csv
+  batch_size: 512
