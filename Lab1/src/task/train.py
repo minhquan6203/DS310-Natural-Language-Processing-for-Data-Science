@@ -56,9 +56,8 @@ class Classify_Task:
         self.base_model.train()
         for epoch in range(initial_epoch, self.num_epochs + initial_epoch):
             valid_acc = 0.
-            valid_f1=0.
-            valid_precision=0.
-            valid_recall=0.
+            valid_f1_macro=0.
+            valid_micro=0.
             train_loss = 0.
             for it,item in enumerate(tqdm(train)):
                 with torch.autocast(device_type='cuda', dtype=torch.float32, enabled=True):
@@ -74,31 +73,26 @@ class Classify_Task:
                     with torch.autocast(device_type='cuda', dtype=torch.float32, enabled=True):
                         logits = self.base_model(item['inputs'])
                     preds = logits.argmax(-1)
-                    acc, f1, precision, recall=compute_score(item['labels'].cpu().numpy(),preds.cpu().numpy(),self.Tag_space)
+                    acc, f1_macro, f1_micro=compute_score(item['labels'].cpu().numpy(),preds.cpu().numpy(),self.Tag_space)
                     valid_acc+=acc
-                    valid_f1+=f1
-                    valid_precision+=precision
-                    valid_recall+=recall
+                    valid_f1_macro+=f1_macro
+                    valid_micro+=f1_micro
         
             train_loss /= len(train)
             valid_acc /= len(valid)
-            valid_f1 /= len(valid)
-            valid_precision /= len(valid)
-            valid_recall /= len(valid)
-
+            valid_f1_macro /= len(valid)
+            valid_micro /= len(valid)
 
             print(f"epoch {epoch + 1}/{self.num_epochs + initial_epoch}")
             print(f"train loss: {train_loss:.4f}")
-            print(f"valid acc: {valid_acc:.4f} | valid f1: {valid_f1:.4f} | valid precision: {valid_precision:.4f} | valid recall: {valid_recall:.4f}")
+            print(f"valid acc: {valid_acc:.4f} | valid f1_macro: {valid_f1_macro:.4f} | valid f1_micro: {valid_micro:.4f}")
 
             if self.best_metric =='accuracy':
                 score=valid_acc
-            if self.best_metric=='f1':
-                score=valid_f1
-            if self.best_metric=='precision':
-                score=valid_precision
-            if self.best_metric=='recall':
-                score=valid_recall
+            if self.best_metric=='f1_macro':
+                score=valid_f1_macro
+            if self.best_metric=='f1_micro':
+                score=valid_f1_macro
             # save the last model
             torch.save({
                 'epoch': epoch,

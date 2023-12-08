@@ -1,15 +1,15 @@
-from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+from sklearn.metrics import f1_score, accuracy_score
 import numpy as np
 
 def compute_score(labels,preds,tag_space):
-    acc=[]
-    f1=[]
-    precision=[]
-    recall=[]
+    label_list=[]
+    pred_list=[]
     for i in range(len(labels)):
       label=[n for n in labels[i] if n < len(tag_space)]
-      acc.append(accuracy_score(label,preds[i][1:len(label)+1]))
-      f1.append(f1_score(label,preds[i][1:len(label)+1],average='macro',zero_division=1))
-      precision.append(precision_score(label,preds[i][1:len(label)+1],average='macro',zero_division=1))
-      recall.append(recall_score(label,preds[i][1:len(label)+1],average='macro',zero_division=1))
-    return np.mean(acc),np.mean(f1),np.mean(precision),np.mean(recall)
+      label_list.extend(label)
+      pred_list.extend(preds[i][1:len(label)+1])
+
+    acc=accuracy_score(label_list,pred_list)
+    f1_macro=f1_score(label_list,pred_list,average='macro',zero_division=1)
+    f1_micro=f1_score(label_list,pred_list,average='micro',zero_division=1)
+    return acc,f1_macro,f1_micro
