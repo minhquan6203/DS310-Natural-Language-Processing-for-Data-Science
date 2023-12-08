@@ -14,7 +14,7 @@ attention:
 
 tokenizer:
   padding: max_length
-  max_length: 64
+  max_length: 32
   truncation: True
   return_token_type_ids: True
   return_attention_mask: True
@@ -40,7 +40,7 @@ train:
   output_dir: checkpoint
   seed: 12345
   num_train_epochs: 100
-  learning_rate: 5.0e-5
+  learning_rate: 1.0e-3
   weight_decay: 0.0
   warmup_ratio: 0.0
   warmup_steps: 0
