@@ -20,10 +20,10 @@ tokenizer:
   return_attention_mask: True
 
 text_embedding:
-  type: usual_embedding #có 5 loại, pretrained, count_vector, tf_idf, usual_embedding, fastext
+  type: fastext #có 5 loại, pretrained, count_vector, tf_idf, usual_embedding, fastext
   text_encoder: vinai/phobert-base
   freeze: True
-  d_features: 768
+  d_features: 300
   d_model: 512
   dropout: 0.2
 
