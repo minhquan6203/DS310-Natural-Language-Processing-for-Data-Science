@@ -49,7 +49,7 @@ class Predict:
         print('f1 macro on test:', f1_score(gts,y_preds,average='macro'))
         print('f1 weighted on test:', f1_score(gts,y_preds,average='weighted'))
         print('confusion matrix:\n',confusion_matrix(gts,y_preds))
-        print('classification report', classification_report(gts,y_preds))
+        print('classification report\n', classification_report(gts,y_preds))
         data = {'preds': y_preds,'gts': gts }
         df = pd.DataFrame(data)
         df.to_csv('./submission.csv', index=False)
